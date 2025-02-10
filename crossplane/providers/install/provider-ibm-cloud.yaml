@@ -1,0 +1,6 @@
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-ibm-cloud
+spec:
+  package: docker.io/crossplane/provider-ibm-cloud:alpha

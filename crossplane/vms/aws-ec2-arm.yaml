@@ -1,0 +1,16 @@
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: Instance
+metadata:
+  name: crossplane-ec2-test-arm64
+spec:
+  forProvider:
+    ami: ami-09373db3d247551a0  # RHEL 9 for arm64
+    availabilityZone: us-east-1c
+    instanceType: t4g.micro
+    region: us-east-1
+    keyName: "crossplane"
+    vpcSecurityGroupIds:
+    - sg-017d9942936593a6b
+    - sg-0fa14204dc58a0847
+  publishConnectionDetailsTo: 
+    name: crossplane-ec2-test-arm64-creds

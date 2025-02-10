@@ -1,0 +1,7 @@
+[tools]
+"aqua:helm/helm" = "v3.17.0"
+kubectl = "1.31.4"
+kustomize = "5.6.0"
+"ubi:argoproj/argo-cd" = "v2.13.3"
+"ubi:cnoe-io/idpbuilder" = "0.9.0-nightly.20250112"
+"ubi:kubernetes-sigs/kind" = "0.26.0"
