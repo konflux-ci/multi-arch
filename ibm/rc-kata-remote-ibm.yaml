@@ -1,0 +1,12 @@
+apiVersion: node.k8s.io/v1
+handler: kata-remote-ibm
+kind: RuntimeClass
+metadata:
+  name: kata-remote-ibm
+overhead:
+  podFixed:
+    cpu: 250m
+    memory: 350Mi
+scheduling:
+  nodeSelector:
+    node-role.kubernetes.io/kata-oc: ""

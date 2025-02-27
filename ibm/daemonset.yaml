@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: peerpodconfig-ctrl-caa-daemon-ibm
+  namespace: openshift-sandboxed-containers-operator
+spec:
+  selector:
+    matchLabels:
+      name: peerpodconfig-ctrl-caa-daemon-ibm
+  template:
+    metadata:
+      labels:
+        name: peerpodconfig-ctrl-caa-daemon-ibm
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/kata-oc: ""
+        cloud-provider: ibm
+      tolerations:
+      - key: "cloud-provider"
+        operator: "Equal"
+        value: "ibm"
+        effect: "NoSchedule"
+      dnsPolicy: ClusterFirst
+      hostNetwork: true
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: default
+      serviceAccountName: default
+      terminationGracePeriodSeconds: 30
+      containers:
+      - command:
+        - /usr/local/bin/entrypoint.sh
+        envFrom:
+        - secretRef:
+            name: peer-pods-secret-ibm
+        env:
+        - name: CLOUD_PROVIDER
+          value: ibmcloud
+        - name: IBMCLOUD_IAM_ENDPOINT
+          value: https://iam.cloud.ibm.com/identity/token
+        - name: IBMCLOUD_VPC_ENDPOINT
+          value: https://eu-de.iaas.cloud.ibm.com/v1
+        - name: IBMCLOUD_RESOURCE_GROUP_ID
+          value: b65ac2ff06aa43ff8f28abc0f500a0a9
+        - name: IBMCLOUD_SSH_KEY_ID
+          value: r010-0f019c63-6d74-4bde-a6f7-78b847d29acc
+        - name: IBMCLOUD_PODVM_IMAGE_ID
+          value: r010-f62d89ff-e0ad-4d35-ba2e-4af9c394f943
+        - name: IBMCLOUD_PODVM_INSTANCE_PROFILE_NAME
+          value: bz2-1x4
+        - name: IBMCLOUD_PODVM_INSTANCE_PROFILE_LIST
+          value: bz2-1x4,bz2-2x8,bz2-4x16,bz2-8x32
+        - name: IBMCLOUD_ZONE
+          value: eu-de-2
+        - name: IBMCLOUD_VPC_SUBNET_ID
+          value: 02c7-09b657d3-e427-4cdc-bf69-068ef6189543
+        - name: IBMCLOUD_VPC_SG_ID
+          value: r010-de5d58a1-456e-45cb-8a66-569b0333ce04
+        - name: IBMCLOUD_VPC_ID
+          value: r010-f8a30744-479f-4495-9aa5-60ae0a107a49
+        image: registry.redhat.io/openshift-sandboxed-containers/osc-cloud-api-adaptor-rhel9@sha256:1f219e03b1152c0306a131f3f416f3fa51bddd6152ddf356d0927409e6c09f8f
+        imagePullPolicy: Always
+        name: caa-pod
+        resources: {}
+        securityContext:
+          privileged: true
+          runAsUser: 0
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /root/containers/
+          name: auth-json-volume
+          readOnly: true
+        - mountPath: /root/.ssh
+          name: ssh
+          readOnly: true
+        - mountPath: /run/peerpod
+          name: pods-dir
+        - mountPath: /run/netns
+          mountPropagation: HostToContainer
+          name: netns
+      volumes:
+      - name: auth-json-volume
+        secret:
+          defaultMode: 384
+          optional: true
+          secretName: auth-json-secret
+      - name: ssh
+        secret:
+          defaultMode: 384
+          optional: true
+          secretName: ssh-key-secret
+      - name: pods-dir
+        hostPath:
+          path: /run/peerpod
+          type: ""
+      - name: netns
+        hostPath:
+          path: /run/netns
+          type: ""
+  updateStrategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+    type: RollingUpdate

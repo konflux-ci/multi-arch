@@ -1,4 +1,6 @@
 [tools]
+ibmcloud = "2.32.2"
 oc = "stable-4.17"
 "pipx:git+https://gitlab.cee.redhat.com/compute/aws-automation.git" = "latest"
-"ubi:openshift/rosa" = "1.2.49"
+"ubi:coreos/butane" = "latest"
+"ubi:openshift/rosa" = "1.2.50"
