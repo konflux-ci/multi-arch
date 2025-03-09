@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: peerpodconfig-ctrl-caa-daemon-ibm
+  name: peerpodconfig-ctrl-caa-daemon-ibm-x86
   namespace: openshift-sandboxed-containers-operator
 spec:
   selector:
     matchLabels:
-      name: peerpodconfig-ctrl-caa-daemon-ibm
+      name: peerpodconfig-ctrl-caa-daemon-ibm-x86
   template:
     metadata:
       labels:
-        name: peerpodconfig-ctrl-caa-daemon-ibm
+        name: peerpodconfig-ctrl-caa-daemon-ibm-x86
     spec:
       nodeSelector:
         node-role.kubernetes.io/kata-oc: ""
-        cloud-provider: ibm
+        cloud-provider: ibm-x86
       tolerations:
       - key: "cloud-provider"
         operator: "Equal"
-        value: "ibm"
+        value: "ibm-x86"
         effect: "NoSchedule"
       dnsPolicy: ClusterFirst
       hostNetwork: true
@@ -46,11 +46,12 @@ spec:
         - name: IBMCLOUD_SSH_KEY_ID
           value: r010-0f019c63-6d74-4bde-a6f7-78b847d29acc
         - name: IBMCLOUD_PODVM_IMAGE_ID
-          value: r010-9fb405f1-3de1-43fb-b270-337fb1e484c2
+          # value: r010-19d7ee8b-c62a-49f8-ac53-5b858970a649
+          value: r010-3ca1cdc8-4371-47b7-b23d-6e2f9e92c800
         - name: IBMCLOUD_PODVM_INSTANCE_PROFILE_NAME
-          value: bz2-1x4
+          value: bx2-2x8
         - name: IBMCLOUD_PODVM_INSTANCE_PROFILE_LIST
-          value: bz2-1x4,bz2-2x8,bz2-4x16,bz2-8x32
+          value: bx2-2x8,bx2-4x16,bx2-8x32
         - name: IBMCLOUD_ZONE
           value: eu-de-2
         - name: IBMCLOUD_VPC_SUBNET_ID
