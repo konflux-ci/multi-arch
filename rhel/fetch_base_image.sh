@@ -1,8 +1,8 @@
 # This script fetches a base RHEL VM image needed to build the Kata peer-PODs VM
 # image.
 
-if ! type -p jq >> /dev/null; then 
-    echo 1>&2 "Error: this script requires `jq` to work"
+if ! type -p jq 2> /dev/null; then 
+    echo 1>&2 'Error: this script requires `jq` to work'
     exit 1
 fi
 
