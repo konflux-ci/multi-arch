@@ -134,13 +134,86 @@ oc create secret generic \
     --from-env-file=_ibm_peer_pods_creds.txt
 ```
 
-### 2.3 Upload peer-PODs VM image
+### 2.3 Build and upload a RHEL peer-POD vm image
 
-Follow the instructions [here][ibm-image]. You'll need to setup a cloud storage
-instance and a bucket.
+The following operations need to be carried out on a VM of the target
+architecture.
 
-[ibm-image]: https://github.com/confidential-containers/cloud-api-adaptor/blob/main/src/cloud-api-adaptor/ibmcloud/IMPORT_PODVM_TO_VPC.md
+1. Obtain RHEL activation keys by going to [console.redhat.com][con.]. Click on
+   the drop-down menu near the Red Hat logo on the lop-left, select "System
+   Configuration" and "Activation Keys". Make note of the organization ID
+   number, then Click on "Create activation key". Fill-in all the form details
+   as needed to create the key. Finally store the key in a file called 
+   `_rhel_act_key_creds.txt` with contents like the following:
+    ```
+    ORG_ID=<the Organisation ID>
+    ACTIVATION_KEY=<Activation key name>
+    export ORG_ID ACTIVATION_KEY
+    ```
+    You can source this file from your shell to have the key defined in your
+    local environment:
+    ```
+    source _rhel_act_key_creds.txt
+    ```
+    
+2. Add the following repositories to your activation key:
+    * Red Hat CodeReady Linux Builder for RHEL 9 IBM z Systems (Debug RPMs)
+    * Red Hat CodeReady Linux Builder for RHEL 9 IBM z Systems (RPMs)
+    * Red Hat CodeReady Linux Builder for RHEL 9 x86_64 (Debug RPMs)
+    * Red Hat CodeReady Linux Builder for RHEL 9 x86_64 (RPMs)
+    * Red Hat CodeReady Linux Builder for RHEL 9 ARM 64 (Debug RPMs)
+    * Red Hat CodeReady Linux Builder for RHEL 9 ARM 64 (RPMs)
+    * Red Hat CodeReady Linux Builder for RHEL 9 Power, little endian (Debug RPMs)
+    * Red Hat CodeReady Linux Builder for RHEL 9 Power, little endian (RPMs)
 
+3. Create a RHEL offline token in [this page][rhtok]. Store it in a file called
+   `_rh_offline_token_creds.txt` with format like the following:
+   ```
+   REDHAT_OFFLINE_TOKEN=<token here>>
+   export REDHAT_OFFLINE_TOKEN
+   ```
+   Source the file to ge the token in your current environment:
+   ```
+   source _rh_offline_token_creds.txt
+   ```
+
+4. Download the RHEL base image using the `rhel/fetch_base_image.sh` script in
+   this repo. The script required the `REDHAT_OFFLINE_TOKEN` environment
+   variable to be defined. The image will be places in a file called 
+   `rhel-9.5-s390x-kvm.qcow2` in the local directory.
+
+5. Clone the [cloud-api-adapter][caa] repo. Then `cd` into the
+   `src/cloud-api-adapter` directory.
+
+6. From the `cloud-api-adapter` Git repo, run the following command to build the
+   RHEL image for s390x (You need to have the RHEL activation key defined in
+   the environment for the shell where you run this):
+   ```
+   ARCH=s390x PODVM_DISTRO=rhel make podvm-builder 
+   ARCH=s390x PODVM_DISTRO=rhel make podvm-binaries 
+   ARCH=s390x PODVM_DISTRO=rhel IMAGE_URL=/path/to/rhel.qcow2 \
+      IMAGE_CHECKSUM=$(sha256sum $IMAGE_URL | cut -d\  -f1) \
+      podvm-image
+   ```
+   This command would require `make` and `docker` or `podman` to run. It would
+   build a container image locally with the POD-VM image in it.
+
+7. Upload the image using the `src/cloud-api-adapter/ibmcloud/image/import.sh`
+   script from the CAA repo. The script requires that `IBMCLOUD_API_KEY` would 
+   be defined in the environment, as well as having a cloud storage instance and
+   a bucket.
+   ```
+   import.sh \
+      quay.io/confidential-containers/podvm-generic-rhel-<arch>:<image SHA>> \
+      eu-de \
+      --instance kata-peer-pods-poc-cos \
+      --pull missing \
+      --os rhel-coreos-stable-<arch>
+   ```
+
+[con.]: https://console.redhat.com
+[caa]: https://github.com/confidential-containers/cloud-api-adaptor
+[rhtok]: https://access.redhat.com/management/api
 
 ### 2.4 Enable traffic between AWS and IBM Cloud
 

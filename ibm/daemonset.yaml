@@ -46,7 +46,8 @@ spec:
         - name: IBMCLOUD_SSH_KEY_ID
           value: r010-0f019c63-6d74-4bde-a6f7-78b847d29acc
         - name: IBMCLOUD_PODVM_IMAGE_ID
-          value: r010-9fb405f1-3de1-43fb-b270-337fb1e484c2
+          # value: r010-9fb405f1-3de1-43fb-b270-337fb1e484c2
+          value: r010-b20a5504-961e-49bf-99d3-5b7083e4d9fc
         - name: IBMCLOUD_PODVM_INSTANCE_PROFILE_NAME
           value: bz2-1x4
         - name: IBMCLOUD_PODVM_INSTANCE_PROFILE_LIST
