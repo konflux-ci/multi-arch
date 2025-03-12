@@ -36,3 +36,11 @@ s390x VMs with those images:
 
 In the long term we need to establish a robust process of generating and
 distributing RHEL-based AMIs for all relevant clouds.
+
+## POD VM images may be tightly coupled with the CAA version
+
+We spent a great deal of time building and trying various POD VM images, only
+to repeatedly encounter the same networking issue. Ultimately the root cause was
+that the CAA image we were using was from OSC 1.8 while our POD VM images were
+built from the sources for OSC 1.9. Using the (pre-released at the time) OSC 1.9
+CAA images finally resolved the issue.
