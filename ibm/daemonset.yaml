@@ -35,6 +35,10 @@ spec:
         - secretRef:
             name: peer-pods-secret-ibm
         env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: "spec.nodeName"
         - name: CLOUD_PROVIDER
           value: ibmcloud
         - name: IBMCLOUD_IAM_ENDPOINT
@@ -60,7 +64,8 @@ spec:
           value: r010-de5d58a1-456e-45cb-8a66-569b0333ce04
         - name: IBMCLOUD_VPC_ID
           value: r010-f8a30744-479f-4495-9aa5-60ae0a107a49
-        image: registry.redhat.io/openshift-sandboxed-containers/osc-cloud-api-adaptor-rhel9@sha256:1f219e03b1152c0306a131f3f416f3fa51bddd6152ddf356d0927409e6c09f8f
+        # Latest 1.9 build (1.9.0-10)
+        image: image-registry.openshift-image-registry.svc:5000/openshift-sandboxed-containers-operator/openshift-sandboxed-containers-operator-cloud-api-adaptor:1.9.0-4
         imagePullPolicy: Always
         name: caa-pod
         resources: {}

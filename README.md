@@ -312,6 +312,30 @@ same key and value.
 
 ### 2.7 Create the CAA DeamonSet
 
+We need the CAA image from OSC 1.9.0 to work with the POD-VM image that we've,
+built. At the time of writing this, OSC 1.9.0 was not release yet, so we fetch
+the CAA image from an internal build registry and push it to the cluster's 
+internal registry:
+```
+IMG_NAME=openshift-sandboxed-containers-operator-cloud-api-adaptor
+CLUS_REG="$(
+   oc get -n openshift-image-registry route default-route -o jsonpath='{.spec.host}'
+)
+
+podman pull \
+   registry-proxy.engineering.redhat.com/rh-osbs/"$IMG_NAME":1.9.0-4
+podman tag \
+   registry-proxy.engineering.redhat.com/rh-osbs/"$IMG_NAME":1.9.0-4 \
+   "$CLUS_REG"/openshift-sandboxed-containers-operator/"$IMG_NAME":1.9.0-4
+podman push \
+   "$CLUS_REG"/openshift-sandboxed-containers-operator/"$IMG_NAME":1.9.0-4
+```
+For the 1.9.0 CAA image to run, some RBAC changes need to be applied:
+```
+oc apply -f ibm/caa-1.9-clusterrole.yaml
+oc apply -f ibm/caa-1.9-clusterrolebinding.yaml
+```
+
 Edit the `ibm/daemonset.yaml` file, set values for `IBMCLOUD_VPC_ENDPOINT`, 
 `IBMCLOUD_RESOURCE_GROUP_ID`, `IBMCLOUD_SSH_KEY_ID`, `IBMCLOUD_PODVM_IMAGE_ID`,
 `IBMCLOUD_ZONE`, `IBMCLOUD_VPC_SUBNET_ID`, `IBMCLOUD_VPC_SG_ID` and 

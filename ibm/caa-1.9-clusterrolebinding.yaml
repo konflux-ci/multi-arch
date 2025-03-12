@@ -1,0 +1,12 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: node-status-patcher
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: openshift-sandboxed-containers-operator
+roleRef:
+  kind: ClusterRole
+  name: node-status-patcher
+  apiGroup: rbac.authorization.k8s.io
