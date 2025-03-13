@@ -6,12 +6,13 @@ if ! type -p jq 2> /dev/null; then
     exit 1
 fi
 
+ARCH="${ARCH:-$(uname -m)}"
 OS_VERSION=9.5
 REDHAT_OFFLINE_TOKEN="${REDHAT_OFFLINE_TOKEN:?Please generate the REDHAT_OFFLINE_TOKEN from https://access.redhat.com/management/api}"
 TOKEN_GENERATOR_URI=https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token
-IMAGES_URI=https://api.access.redhat.com/management/v1/images/rhel/$OS_VERSION/s390x
+IMAGES_URI=https://api.access.redhat.com/management/v1/images/rhel/$OS_VERSION/$ARCH
 
-filename="rhel-$OS_VERSION-s390x-kvm.qcow2" 
+filename="rhel-$OS_VERSION-$ARCH-kvm.qcow2" 
 
 token=$(curl $TOKEN_GENERATOR_URI \
 	-d grant_type=refresh_token -d client_id=rhsm-api \
@@ -27,4 +28,4 @@ download_url=$(curl -X 'GET' ${download_href} \
 	-H "Authorization: Bearer $token" -H 'accept: application/json' | jq -r .body.href )
 
 curl -X GET $download_url -H "Authorization: Bearer $token" \
-    --output rhel-$OS_VERSION-s390x-kvm.qcow2
+    --output rhel-$OS_VERSION-$ARCH-kvm.qcow2
