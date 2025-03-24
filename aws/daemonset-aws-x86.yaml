@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: peerpodconfig-ctrl-caa-daemon
+  namespace: openshift-sandboxed-containers-operator
+spec:
+  selector:
+    matchLabels:
+      name: peerpodconfig-ctrl-caa-daemon
+  template:
+    metadata:
+      labels:
+        name: peerpodconfig-ctrl-caa-daemon
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/kata-oc: ""
+      dnsPolicy: ClusterFirst
+      hostNetwork: true
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: default
+      serviceAccountName: default
+      terminationGracePeriodSeconds: 30
+      containers:
+      - command:
+        - /usr/local/bin/entrypoint.sh
+        envFrom:
+        - secretRef:
+            name: peer-pods-secret
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: "spec.nodeName"
+        - name: CLOUD_PROVIDER
+          value: aws
+        - name: PODVM_AMI_ID
+          value: ami-025dcab94f0a13537
+        - name: PODVM_INSTANCE_TYPE
+          value: t3.medium
+        - name: VXLAN_PORT
+          value: '9000'
+        - name: AWS_SG_IDS
+          value: sg-0de181d20ac0fbfaa
+        - name: PROXY_TIMEOUT
+          value: 5m
+        - name: DISABLECVM
+          value: 'true'
+        - name: PODVM_INSTANCE_TYPES
+          value: 't2.small,t2.medium,t3.large'
+        - name: AWS_VPC_ID
+          value: vpc-00c98dccc54e08ce8
+        - name: AWS_REGION
+          value: eu-central-1
+        - name: AWS_SUBNET_ID
+          value: subnet-0227878adf1cb662c
+        image: image-registry.openshift-image-registry.svc:5000/openshift-sandboxed-containers-operator/openshift-sandboxed-containers-operator-cloud-api-adaptor:1.9.0-4
+        imagePullPolicy: Always
+        name: caa-pod
+        resources: {}
+        securityContext:
+          privileged: true
+          runAsUser: 0
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /root/containers/
+          name: auth-json-volume
+          readOnly: true
+        - mountPath: /root/.ssh
+          name: ssh
+          readOnly: true
+        - mountPath: /run/peerpod
+          name: pods-dir
+        - mountPath: /run/netns
+          mountPropagation: HostToContainer
+          name: netns
+      volumes:
+      - name: auth-json-volume
+        secret:
+          defaultMode: 384
+          optional: true
+          secretName: auth-json-secret
+      - name: ssh
+        secret:
+          defaultMode: 384
+          optional: true
+          secretName: ssh-key-secret
+      - name: pods-dir
+        hostPath:
+          path: /run/peerpod
+          type: ""
+      - name: netns
+        hostPath:
+          path: /run/netns
+          type: ""
+  updateStrategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+    type: RollingUpdate
