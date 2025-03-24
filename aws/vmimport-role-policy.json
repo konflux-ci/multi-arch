@@ -1,0 +1,51 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:ListBucket",
+                "s3:GetBucketLocation",
+                "s3:GetObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::kata-image-bucket",
+                "arn:aws:s3:::kata-image-bucket/*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:ListBucket",
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:PutObject",
+                "s3:GetBucketAcl",
+                "s3:AbortMultipartUpload"
+            ],
+            "Resource": [
+                "arn:aws:s3:::kata-image-bucket",
+                "arn:aws:s3:::kata-image-bucket/*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ec2:Describe*",
+                "ec2:ExportImage",
+                "ec2:CancelExportTask"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+               "ec2:ModifySnapshotAttribute",
+               "ec2:CopySnapshot",
+               "ec2:RegisterImage",
+               "ec2:Describe*"
+            ],
+            "Resource": "*"
+         }        
+    ]
+}
