@@ -55,6 +55,8 @@ spec:
           value: eu-central-1
         - name: AWS_SUBNET_ID
           value: subnet-0227878adf1cb662c
+        - name: SSH_KP_NAME
+          value: bkorren-for-builders
         image: image-registry.openshift-image-registry.svc:5000/openshift-sandboxed-containers-operator/openshift-sandboxed-containers-operator-cloud-api-adaptor:1.9.0-4
         imagePullPolicy: Always
         name: caa-pod
