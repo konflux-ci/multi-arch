@@ -1,0 +1,17 @@
+{
+    "apiVersion": "v1",
+    "spec": {
+      "runtimeClassName": "kata-remote",
+      "tolerations": [
+        {
+          "key": "cloud-provider",
+          "operator": "Equal",
+          "value": "aws-arm64",
+          "effect": "NoSchedule"
+        }
+      ],
+      "nodeSelector": {
+        "cloud-provider": "aws-arm64"
+      }
+    }
+}
