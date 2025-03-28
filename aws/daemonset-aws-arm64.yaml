@@ -42,7 +42,7 @@ spec:
         - name: CLOUD_PROVIDER
           value: aws
         - name: PODVM_AMI_ID
-          value: ami-0f6fd6500fac774b2
+          value:  ami-05cc9e73f37808393
         - name: PODVM_INSTANCE_TYPE
           value: t4g.small
         - name: VXLAN_PORT

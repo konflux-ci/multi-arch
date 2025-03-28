@@ -362,3 +362,132 @@ oc run kata-test1 -it --rm --pod-running-timeout=15m \
     --restart=Never \
     --overrides="$(cat ibm-overrides.json)"
 ```
+
+## 3. ARM64 on AWS setup
+
+### 3.1 Build the guest components for arm64 (Statically linked with libmusl)
+
+Do the following on an arm64/RHEL9 machine:
+
+1. Clone the [guest-components repo][gcr].
+
+2. Checkout the commit that is listed in the `versions.yaml` file in the CAA
+   repo:
+   ```
+   git checkout 514c561d933cb11a0f1628621a0b930157af76cd
+
+   ```
+
+3. Start a Fedora container with:
+   ```
+   podman run -it --rm -v .:/src:z --workdir /src fedora:41 
+   ```
+
+4. In the Fedora container:
+   ```
+   yum install musl-devel musl-gcc musl-clang openssl-devel perl-lib \
+      perl-FindBin perl-IPC-Cmd perl-File-Compare perl-File-Copy \
+      protobuf-devel rustup git
+   rustup-init -t aarch64-unknown-linux-musl -y
+   . "$HOME/.cargo/env"
+   TARGET_CC=musl-gcc make
+   ```
+
+### 3.2. Push the built binaries as tarbals to an OCI registry:
+
+Do this on the arm64/RHEL9 machine, but not in a Fedora container:
+
+1. Get Oras:
+   ```
+   curl \
+      -L https://github.com/oras-project/oras/releases/download/v1.2.2/oras_1.2.2_linux_arm64.tar.gz \
+   | tar -C ~/.local/bin/ -xvz oras
+   ```
+2. Make sure you are logged in to a container registry you can push to 
+   (E.g. quay.io):
+   ```
+   oras login quay.io
+   ```
+
+3. Pack and push the guest components:
+   ```   
+   cd target/aarch64-unknown-linux-musl/release/
+   
+   sha=$(git log -1 --pretty=format:%H)
+
+   tar cJf confidential-data-hub.tar.xz confidential-data-hub
+   oras push quay.io/bkorren/confidential-data-hub:${sha}-aarch64 \
+      confidential-data-hub.tar.xz
+
+   tar cJf api-server-rest.tar.xz api-server-rest
+   oras push quay.io/bkorren/api-server-rest:${sha}-aarch64 \
+      api-server-rest.tar.xz
+
+   tar cJf attestation-agent.tar.xz attestation-agent
+   oras push quay.io/bkorren/attestation-agent:${sha}-none_aarch64 \
+      attestation-agent.tar.xz
+   ```
+
+4. Go into the container registry's UI and make the repositories we just pushed
+   public so that further build processes can pull them.
+
+[gcr]: https://github.com/confidential-containers/guest-components.git
+
+### 3.3 Build the PODVM BootC image
+
+Do this on the arm64/RHEL9 machine.
+
+1. Similar to building the s390x image, make sure `ORG_ID` and `ACTIVATION_KEY`
+   are defined in the environment.
+2. Checkout a version of the cloud-api-adapter repo that includes 
+   [PR#2331][pr2331]. 
+3. Run the following from the `src/cloud-api-adapter` directory to build the 
+   "builder" and "binaries" images:
+   ```
+   PODVM_DISTRO=rhel make podvm-builder 
+   PODVM_DISTRO=rhel GUEST_COMPONENTS_REGISTRY=quay.io/bkorren \
+      make podvm-binaries 
+   ```
+4. Checkout a version of the cloud-api-adapter repo that includes 
+   [PR#2348][pr2348].
+5. Run the following from the `src/cloud-api-adapter` directory to build the 
+   "bootc" image.
+
+### 3.4. Push BootC image as an AMI to AWS
+
+1. Setup a `config` and a `credentials` file on your ar64/RHEL9 image build
+   machine. The former should specify the right AWS region to push the image to
+   while the latter should include appropriate credentials. You can set this up
+   by either installing and configuring the AWS client on the machine, or by 
+   copying the files from another machine where the AWS client was already
+   installed.
+
+2. Run this command to push the PODVM Bootc image to AWS and convert it to an
+   AMI:
+   ```
+   PODVM_DISTRO=rhel PODVM_BOOTC_AWS_REGION=eu-central-1 make podvm-bootc-aws-ami
+   ```
+
+### 3.5. Setup a dedicated node and a DaemonSet
+
+1. Like e previously did for s390x, use the ROSA OCM to add a machine pool. Add
+   a `cloud-provider` label to the machine pool with the value set to `ibm`.
+   Also add a `NoSchedule` taint with the same key and value.
+
+2. Adjust the `aws/daemonset-aws-arm64.yaml` file to match your AWS account
+   details including the region and VPC, subnet, SG and AMI IDs. Then use the
+   following command to apply it to the cluster:
+   ```
+   oc apply -f aws/daemonset-aws-arm64.yaml
+   ```
+
+### 3.6. Run a test workload
+
+To run an arm64 test workload:
+```
+oc run kata-test1-arm64 -it --rm --image=registry.access.redhat.com/ubi9 \
+   --restart=Never --overrides="$(cat aws-overrides-arm64.json)"
+```
+
+[pr2331]: https://github.com/confidential-containers/cloud-api-adaptor/pull/2331
+[pr2348]: https://github.com/confidential-containers/cloud-api-adaptor/pull/2348
