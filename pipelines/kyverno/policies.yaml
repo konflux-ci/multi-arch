@@ -1,0 +1,40 @@
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: assign-and-validate-kata-peer-pods
+spec:
+  background: false
+  rules:
+    - name: assign-pod-to-platform
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              annotations:
+                konflux-ci.dev/platform-param: "*"
+              operations:
+                - CREATE
+      context:
+        - name: taskrun
+          variable:
+            jmesPath: request.object.metadata.labels."tekton.dev/taskRun"
+        - name: platformParamName
+          variable:
+            jmesPath: request.object.metadata.annotations."konflux-ci.dev/platform-param"
+        - name: platformParamValue
+          apiCall:
+            urlPath:  "/apis/tekton.dev/v1/namespaces/{{ request.namespace }}/taskruns/{{ taskrun }}"
+            jmesPath: spec.params[?name=='{{ platformParamName }}'].value | [0]
+      mutate:
+        patchStrategicMerge:
+          spec:
+            runtimeClassName: kata-remote
+            tolerations:
+              - key: cloud-provider
+                operator: Equal
+                value: "{{ platformParamValue }}"
+                effect: NoSchedule
+            nodeSelector:
+              cloud-provider: "{{ platformParamValue }}"

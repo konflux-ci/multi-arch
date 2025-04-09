@@ -28,3 +28,34 @@ oc create -f pipelines/multi-arch-native.yaml
   The proposed solution in PR [#8599](https://github.com/tektoncd/pipeline/pull/8599)
   may solve most noted drawbacks.
 
+## Kyverno Approach
+
+### Setup
+
+```shell
+# Install kyverno
+oc create -f https://github.com/kyverno/kyverno/releases/download/v1.11.1/install.yaml
+
+# Deploy kyverno configs
+oc create -f pipelines/kyverno
+```
+
+### Try it
+```shell
+oc create -f pipelines/multi-arch-kyverno.yaml
+```
+
+### Pros
+- Matrix params are supported. Adding a platform is simple with no configuration repetition.
+- Can easily be adapted if/when pod templates can be defined within `Tasks`.
+- Does not require the `v1beta1` version of the `PipelineRun` API (works with `v1`).
+
+### Cons
+- `Pods` are the most heavily used resources in Konflux clusters. Enforcing a Kyverno
+  policy at resource creation time may introduce bottlenecks or other performance issues.
+- The policy requires an additional API call to retrieve a param value from the `TaskRun` which
+  generated the `Pod`. It's not possible for the policy to select the `TaskRun` directly and mutate
+  its pod template when the task definition is not inline (i.e. using a `taskRef`).
+  In such a scenario, the `Task` annotations are propagated to the `TaskRun` with an update
+  operation rather than during creation. A Tekton admission webhook prevents the `TaskRun` spec
+  from being modified after the resource has been created.
