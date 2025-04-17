@@ -21,7 +21,6 @@ oc create -f pipelines/multi-arch-native.yaml
   In a `PipelineRun` they must be defined using `spec.taskRunSpecs`, not within the pipeline tasks.
 - `spec.taskRunSpecs` requires named references to their respective pipeline task. It's not
   possible to reference a specific combination from a pipeline task using the `Matrix` feature.
-- Requires the `v1beta1` version of the `PipelineRun` API.
 
 > **Note:** The inability to declare the pod template on a task is a known issue
   (see issue [#6742](https://github.com/tektoncd/pipeline/issues/6742)).
@@ -48,7 +47,6 @@ oc create -f pipelines/multi-arch-kyverno.yaml
 ### Pros
 - Matrix params are supported. Adding a platform is simple with no configuration repetition.
 - Can easily be adapted if/when pod templates can be defined within `Tasks`.
-- Does not require the `v1beta1` version of the `PipelineRun` API (works with `v1`).
 
 ### Cons
 - `Pods` are the most heavily used resources in Konflux clusters. Enforcing a Kyverno
