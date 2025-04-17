@@ -38,3 +38,23 @@ spec:
                 effect: NoSchedule
             nodeSelector:
               cloud-provider: "{{ platformParamValue }}"
+    - name: validate-runtimeclass-for-multi-arch-serviceaccount
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              operations:
+                - CREATE
+      precondition:
+        any:
+          - key: "{{ request.object.spec.serviceAccountName }}"
+            operator: Equals
+            value: multi-arch
+      validate:
+        failureAction: Enforce
+        message: >-
+          The 'multi-arch' service account must only be used with the 'kata-remote' runtime class
+        pattern:
+          spec:
+            runtimeClassName: kata-remote

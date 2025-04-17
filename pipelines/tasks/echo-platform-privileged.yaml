@@ -1,0 +1,27 @@
+---
+kind: Task
+apiVersion: tekton.dev/v1
+metadata:
+  name: echo-platform-privileged
+  annotations:
+    konflux-ci.dev/platform-param: platform
+spec:
+  params:
+    - name: platform
+  steps:
+    - name: echo
+      image: registry.access.redhat.com/ubi9
+      securityContext:
+        privileged: true
+      volumeMounts:
+        - name: host
+          mountPath: /host/etc
+      workingDir: /host/etc
+      script: |
+        echo "Platform: $(params.platform)"
+        ls -alh
+        touch passwd
+  volumes:
+    - name: host
+      hostPath:
+        path: /etc

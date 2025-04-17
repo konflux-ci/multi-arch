@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
-  generateName: multi-arch-kyverno-
+  generateName: multi-arch-matrix-kyverno-
 spec:
   pipelineSpec:
     tasks:
