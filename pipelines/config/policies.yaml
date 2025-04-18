@@ -12,6 +12,9 @@ spec:
           - resources:
               kinds:
                 - Pod
+              selector:
+                matchLabels:
+                  tekton.dev/taskRun: "*"
               annotations:
                 konflux-ci.dev/platform-param: "*"
               operations:
@@ -44,6 +47,9 @@ spec:
           - resources:
               kinds:
                 - Pod
+              selector:
+                matchLabels:
+                  tekton.dev/taskRun: "*"
               operations:
                 - CREATE
       precondition:
