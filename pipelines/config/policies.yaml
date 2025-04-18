@@ -56,11 +56,11 @@ spec:
         any:
           - key: "{{ request.object.spec.serviceAccountName }}"
             operator: Equals
-            value: multi-arch
+            value: multi-arch-runner
       validate:
         failureAction: Enforce
         message: >-
-          The 'multi-arch' service account must only be used with the 'kata-remote' runtime class
+          The 'multi-arch-runner' service account must only be used with the 'kata-remote' runtime class
         pattern:
           spec:
             runtimeClassName: kata-remote
