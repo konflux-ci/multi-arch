@@ -63,9 +63,9 @@ oc create -f pipelines/multi-arch-matrix-kyverno.yaml
 ## Privileged Pods w/Kyverno
 
 Granting elevated privileges to peer pods is as simple as applying the needed configuration on a
-`TaskRun`/`Pod` spec except the `SecurityContextConstraints` (SCC) linked to the default
-pipeline runner service account doesn't allow for this in Konflux. To overcome this issue we
-need to create another service account and link that to a different SCC with more open permissions.
+`TaskRun`/`Pod` spec except the `SecurityContextConstraints` (SCC) linked to the build
+pipeline runner service accounts don't allow for this in Konflux. To overcome this issue we
+could create another service account and link that to a different SCC with more open permissions.
 In this example we use the platform provided `privileged` SCC.
 However, we also need something (Kyverno), to prevent use of the service account in any other
 workloads (those not using the `kata-remote` runtime class).
@@ -80,5 +80,6 @@ oc create -f pipelines/multi-arch-matrix-kyverno-privileged.yaml
 
 ### Cons
 - Overhead from executing another Kyverno policy rule.
-- The user must specify a service account for multi-arch `TaskRuns` which can make
-  `PipelineRuns` potentially a little less portable between Konflux environments.
+- Requires the user to specify yet another service account in their `PipelineRuns`.
+- Requires creation of another service account per component in each tenant (as permitted).
+  The build service is responsible for creating the service accounts.
