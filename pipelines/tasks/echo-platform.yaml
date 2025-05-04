@@ -1,0 +1,15 @@
+---
+kind: Task
+apiVersion: tekton.dev/v1
+metadata:
+  name: echo-platform
+  annotations:
+    konflux-ci.dev/platform-param: platform
+spec:
+  params:
+    - name: platform
+  steps:
+    - name: echo
+      image: registry.access.redhat.com/ubi9
+      script: |
+        echo "Platform: $(params.platform)"

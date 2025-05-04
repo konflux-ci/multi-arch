@@ -1,0 +1,18 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: multi-arch-matrix-kyverno-
+spec:
+  pipelineSpec:
+    tasks:
+      - name: echo-platform
+        displayName: "echo-platform-$(params.platform)"
+        matrix:
+          params:
+            - name: platform
+              value:
+                - aws-arm64
+                - ibm-x86
+                - ibm
+        taskRef:
+          name: echo-platform

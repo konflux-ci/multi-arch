@@ -1,0 +1,11 @@
+---
+kind: Task
+apiVersion: tekton.dev/v1
+metadata:
+  name: echo-simple
+spec:
+  steps:
+    - name: echo
+      image: registry.access.redhat.com/ubi9
+      script: |
+        echo "Hello, world!"

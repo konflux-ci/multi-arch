@@ -1,0 +1,27 @@
+---
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: multi-arch-matrix-kyverno-privileged-
+spec:
+  taskRunTemplate:
+    serviceAccountName: default-pipeline-runner
+  taskRunSpecs:
+    - pipelineTaskName: echo-platform-privileged
+      serviceAccountName: multi-arch-runner
+  pipelineSpec:
+    tasks:
+      - name: echo-simple
+        taskRef:
+          name: echo-simple
+      - name: echo-platform-privileged
+        displayName: "echo-platform-privileged-$(params.platform)"
+        matrix:
+          params:
+            - name: platform
+              value:
+                - aws-arm64
+                - ibm-x86
+                - ibm
+        taskRef:
+          name: echo-platform-privileged

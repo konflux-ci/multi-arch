@@ -1,0 +1,47 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: multi-arch-native-
+spec:
+  taskRunSpecs:
+    - pipelineTaskName: echo-simple-aws-arm64
+      podTemplate:
+        runtimeClassName: kata-remote
+        tolerations:
+          - key: cloud-provider
+            operator: Equal
+            value: aws-arm64
+            effect: NoSchedule
+        nodeSelector:
+          cloud-provider: aws-arm64
+    - pipelineTaskName: echo-simple-ibm-x86
+      podTemplate:
+        runtimeClassName: kata-remote
+        tolerations:
+          - key: cloud-provider
+            operator: Equal
+            value: ibm-x86
+            effect: NoSchedule
+        nodeSelector:
+          cloud-provider: ibm-x86
+    - pipelineTaskName: echo-simple-ibm-s390x
+      podTemplate:
+        runtimeClassName: kata-remote
+        tolerations:
+          - key: cloud-provider
+            operator: Equal
+            value: ibm
+            effect: NoSchedule
+        nodeSelector:
+          cloud-provider: ibm
+  pipelineSpec:
+    tasks:
+      - name: echo-simple-aws-arm64
+        taskRef:
+          name: echo-simple
+      - name: echo-simple-ibm-x86
+        taskRef:
+          name: echo-simple
+      - name: echo-simple-ibm-s390x
+        taskRef:
+          name: echo-simple
